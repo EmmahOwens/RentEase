@@ -62,7 +62,7 @@ class _SignupScreenState extends State<SignupScreen> {
     final theme = Theme.of(context);
     
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -80,14 +80,14 @@ class _SignupScreenState extends State<SignupScreen> {
               'Create account',
               style: theme.textTheme.displayMedium?.copyWith(
                 fontWeight: FontWeight.w900,
-                color: theme.colorScheme.onBackground,
+                color: theme.colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Sign up to get started',
               style: theme.textTheme.titleMedium?.copyWith(
-                color: theme.colorScheme.onBackground.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
               ),
             ),
             const SizedBox(height: 32),
@@ -159,7 +159,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     border: Border.all(
                       color: _selectedRole == 'tenant'
                           ? theme.colorScheme.primary
-                          : theme.colorScheme.onBackground.withOpacity(0.1),
+                          : theme.colorScheme.onSurface.withOpacity(0.1),
                       width: 2,
                     ),
                     child: Column(
@@ -169,7 +169,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           size: 32,
                           color: _selectedRole == 'tenant'
                               ? theme.colorScheme.primary
-                              : theme.colorScheme.onBackground.withOpacity(0.7),
+                              : theme.colorScheme.onSurface.withOpacity(0.7),
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -177,7 +177,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           style: TextStyle(
                             color: _selectedRole == 'tenant'
                                 ? theme.colorScheme.primary
-                                : theme.colorScheme.onBackground,
+                                : theme.colorScheme.onSurface,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -195,7 +195,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     border: Border.all(
                       color: _selectedRole == 'landlord'
                           ? theme.colorScheme.primary
-                          : theme.colorScheme.onBackground.withOpacity(0.1),
+                          : theme.colorScheme.onSurface.withOpacity(0.1),
                       width: 2,
                     ),
                     child: Column(
@@ -205,7 +205,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           size: 32,
                           color: _selectedRole == 'landlord'
                               ? theme.colorScheme.primary
-                              : theme.colorScheme.onBackground.withOpacity(0.7),
+                              : theme.colorScheme.onSurface.withOpacity(0.7),
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -213,7 +213,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           style: TextStyle(
                             color: _selectedRole == 'landlord'
                                 ? theme.colorScheme.primary
-                                : theme.colorScheme.onBackground,
+                                : theme.colorScheme.onSurface,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

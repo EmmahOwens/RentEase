@@ -22,7 +22,7 @@ class _AppBottomNavigationState extends State<AppBottomNavigation> {
     final user = context.watch<AuthProvider>().currentUser!;
     final isTenant = user.role == 'tenant';
 
-    final List<Widget> _pages = [
+    final List<Widget> pages = [
       isTenant ? const TenantDashboard() : const LandlordDashboard(),
       const TransactionHistoryScreen(),
       const ProfileScreen(),
@@ -32,7 +32,7 @@ class _AppBottomNavigationState extends State<AppBottomNavigation> {
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _pages,
+        children: pages,
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,

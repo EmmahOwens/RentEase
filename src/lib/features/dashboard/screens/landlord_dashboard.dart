@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../core/models/payment.dart';
-import '../../../core/widgets/airbnb_button.dart';
 import '../../../core/widgets/airbnb_card.dart';
 import '../../../features/payments/providers/payment_provider.dart';
 import '../../../features/auth/providers/auth_provider.dart';
@@ -47,7 +46,7 @@ class LandlordDashboard extends StatelessWidget {
               title: Text(
                 'Landlord Dashboard',
                 style: theme.textTheme.titleLarge?.copyWith(
-                  color: theme.colorScheme.onBackground,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               titlePadding: const EdgeInsets.only(left: 16, bottom: 16),

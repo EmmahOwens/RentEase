@@ -64,11 +64,9 @@ class NeuTheme {
       primary: Color(0xFF2D3250),
       secondary: Color(0xFF424769),
       tertiary: Color(0xFFF6B17A),
-      background: Color(0xFFF0F0F3),
       surface: Color(0xFFF0F0F3),
       onPrimary: Colors.white,
       onSecondary: Colors.white,
-      onBackground: Color(0xFF2D3250),
       onSurface: Color(0xFF2D3250),
     );
   }
@@ -78,11 +76,9 @@ class NeuTheme {
       primary: Color(0xFFF6B17A),
       secondary: Color(0xFF7077A1),
       tertiary: Color(0xFF2D3250),
-      background: Color(0xFF13131A),
       surface: Color(0xFF13131A),
       onPrimary: Color(0xFF2D3250),
       onSecondary: Colors.white,
-      onBackground: Colors.white,
       onSurface: Colors.white,
     );
   }
@@ -96,7 +92,6 @@ class NeuTheme {
         bodyColor: const Color(0xFF2D3250),
         displayColor: const Color(0xFF2D3250),
       ),
-      useMaterial3: true,
     );
   }
 
@@ -109,7 +104,6 @@ class NeuTheme {
         bodyColor: Colors.white,
         displayColor: Colors.white,
       ),
-      useMaterial3: true,
     );
   }
 }

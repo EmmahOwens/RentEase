@@ -3,7 +3,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../core/widgets/airbnb_button.dart';
 import '../../../core/widgets/airbnb_card.dart';
 import '../../../core/widgets/airbnb_text_field.dart';
-import '../models/tenant.dart';
 
 class AddTenantScreen extends StatefulWidget {
   const AddTenantScreen({super.key});

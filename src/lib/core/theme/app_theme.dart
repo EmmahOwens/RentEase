@@ -10,7 +10,6 @@ class AppTheme {
       secondary: Color(0xFF424769),
       tertiary: Color(0xFFF6B17A),
       surface: Color(0xFF7077A1).withOpacity(0.1),
-      background: Color(0xFFF6F6F6),
     ),
     textTheme: GoogleFonts.poppinsTextTheme().copyWith(
       displayLarge: GoogleFonts.poppins(
@@ -45,7 +44,6 @@ class AppTheme {
       secondary: Color(0xFF7077A1),
       tertiary: Color(0xFF2D3250),
       surface: Color(0xFF424769).withOpacity(0.1),
-      background: Color(0xFF121212),
     ),
     textTheme: GoogleFonts.poppinsTextTheme().copyWith(
       displayLarge: GoogleFonts.poppins(

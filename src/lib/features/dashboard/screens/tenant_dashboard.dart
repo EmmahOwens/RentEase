@@ -44,7 +44,7 @@ class TenantDashboard extends StatelessWidget {
               title: Text(
                 'Welcome, ${user.name.split(' ')[0]}',
                 style: theme.textTheme.titleLarge?.copyWith(
-                  color: theme.colorScheme.onBackground,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
@@ -255,7 +255,7 @@ class TenantDashboard extends StatelessWidget {
         FaIcon(
           icon,
           size: 16,
-          color: theme.colorScheme.onBackground.withOpacity(0.7),
+          color: theme.colorScheme.onSurface.withOpacity(0.7),
         ),
         const SizedBox(width: 8),
         Text(

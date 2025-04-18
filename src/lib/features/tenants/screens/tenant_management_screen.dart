@@ -83,7 +83,7 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
               title: Text(
                 'Tenant Management',
                 style: theme.textTheme.titleLarge?.copyWith(
-                  color: theme.colorScheme.onBackground,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               titlePadding: const EdgeInsets.only(left: 16, bottom: 16),

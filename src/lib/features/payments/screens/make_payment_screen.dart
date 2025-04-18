@@ -6,9 +6,7 @@ import '../../../core/layouts/dashboard_layout.dart';
 import '../../../core/models/payment.dart';
 import '../../../core/widgets/neu_button.dart';
 import '../../../core/widgets/neu_text_field.dart';
-import '../../../core/widgets/neu_card.dart';
 import '../../../core/widgets/payment_method_card.dart';
-import '../providers/payment_provider.dart';
 import '../../../features/auth/providers/auth_provider.dart';
 import 'card_payment_screen.dart';
 import 'mobile_money_screen.dart';
@@ -26,7 +24,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen> {
   final _amountController = TextEditingController();
   final _descriptionController = TextEditingController();
   PaymentMethod? _selectedMethod;
-  bool _isProcessing = false;
+  final bool _isProcessing = false;
 
   @override
   void dispose() {

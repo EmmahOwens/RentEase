@@ -19,14 +19,11 @@ class AirbnbTheme {
   static ThemeData getLightTheme() {
     final baseTheme = ThemeData.light();
     return baseTheme.copyWith(
-      useMaterial3: true,
       colorScheme: const ColorScheme.light(
         primary: primaryColor,
         secondary: secondaryColor,
         tertiary: accentColor,
-        background: backgroundLight,
         surface: surfaceLight,
-        onBackground: neutralDark,
         onSurface: neutralDark,
       ),
       scaffoldBackgroundColor: backgroundLight,
@@ -162,14 +159,11 @@ class AirbnbTheme {
   static ThemeData getDarkTheme() {
     final baseTheme = ThemeData.dark();
     return baseTheme.copyWith(
-      useMaterial3: true,
       colorScheme: const ColorScheme.dark(
         primary: primaryColor,
         secondary: secondaryColor,
         tertiary: accentColor,
-        background: backgroundDark,
         surface: surfaceDark,
-        onBackground: Colors.white,
         onSurface: Colors.white,
       ),
       scaffoldBackgroundColor: backgroundDark,

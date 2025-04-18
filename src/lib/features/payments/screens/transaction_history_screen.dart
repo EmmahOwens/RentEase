@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/layouts/dashboard_layout.dart';
-import '../../../core/models/payment.dart';
 import '../../../core/widgets/neu_card.dart';
 import '../../../core/widgets/transaction_card.dart';
 import '../providers/payment_provider.dart';
