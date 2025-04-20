@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "910794508112",
+    "project_id": "rentease256",
+    "storage_bucket": "rentease256.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:910794508112:android:7877f21c2aab82ca270e55",
+        "android_client_info": {
+          "package_name": "com.owen.rentsmart"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKxBBDCUfcbyjvz20zkaJHGq3iWwB_8Vg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
