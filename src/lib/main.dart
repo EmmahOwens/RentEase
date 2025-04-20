@@ -7,6 +7,7 @@ import 'core/navigation/auth_wrapper.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/payments/providers/payment_provider.dart';
 import 'features/messages/providers/message_provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class PreferencesService {
   static Future<void> init() async {
@@ -16,7 +17,17 @@ class PreferencesService {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize SharedPreferences
   await PreferencesService.init();
+
+  // Initialize Firebase with error handling
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    debugPrint("Error initializing Firebase: $e");
+  }
+
   runApp(const MyApp());
 }
 
