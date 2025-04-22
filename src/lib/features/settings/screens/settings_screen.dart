@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/layouts/dashboard_layout.dart';
 import '../../../core/widgets/neu_card.dart';
 import '../../../core/theme/theme_provider.dart';
+import '../../../features/auth/providers/auth_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -11,6 +13,8 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final themeProvider = context.watch<ThemeProvider>();
+    final authProvider = context.watch<AuthProvider>();
+    final user = authProvider.currentUser;
 
     return DashboardLayout(
       title: 'Settings',
@@ -35,6 +39,26 @@ class SettingsScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
+          if (user?.role == 'landlord') ...[
+            _buildSection(
+              context,
+              'Admin Code',
+              [
+                ListTile(
+                  title: const Text('Update Admin Code'),
+                  subtitle: Text(
+                    'Change the admin code for your account',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _showAdminCodeDialog(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+          ],
           _buildSection(
             context,
             'Notifications',
@@ -166,6 +190,61 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  void _showAdminCodeDialog(BuildContext context) {
+    final adminCodeController = TextEditingController();
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Update Admin Code'),
+          content: TextField(
+            controller: adminCodeController,
+            decoration: const InputDecoration(
+              labelText: 'New Admin Code',
+              hintText: 'Enter new admin code',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final newCode = adminCodeController.text.trim();
+                if (newCode.isNotEmpty) {
+                  try {
+                    await FirebaseFirestore.instance
+                        .collection('settings')
+                        .doc('adminCode')
+                        .set({'code': newCode});
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Admin code updated successfully'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to update admin code: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+                Navigator.pop(context);
+              },
+              child: const Text('Update'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

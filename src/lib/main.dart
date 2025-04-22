@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,14 +19,24 @@ class PreferencesService {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize SharedPreferences
-  await PreferencesService.init();
+  if(kIsWeb) {
+    Firebase.initializeApp(options: FirebaseOptions(
+        apiKey: "AIzaSyBwF8-9mbK8gMQX8sbUG5P4O76AXEDp06M",
+        authDomain: "rentease256.firebaseapp.com",
+        appId: "1:910794508112:web:50bb74bc1af3f1c7270e55",
+        messagingSenderId: "910794508112",
+        projectId: "rentease256"
+    ));
+  } else {
+    // Initialize SharedPreferences
+    await PreferencesService.init();
 
-  // Initialize Firebase with error handling
-  try {
-    await Firebase.initializeApp();
-  } catch (e) {
-    debugPrint("Error initializing Firebase: $e");
+    // Initialize Firebase with error handling
+    try {
+      await Firebase.initializeApp();
+    } catch (e) {
+      debugPrint("Error initializing Firebase: $e");
+    }
   }
 
   runApp(const MyApp());
