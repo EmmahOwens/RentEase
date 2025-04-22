@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.owen.rentsmart" />
+                  <option name="mobileSdkAppId" value="1:910794508112:android:7877f21c2aab82ca270e55" />
+                  <option name="projectId" value="rentease256" />
+                  <option name="projectNumber" value="910794508112" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
