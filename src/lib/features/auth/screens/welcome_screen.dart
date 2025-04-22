@@ -46,7 +46,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      'RentEase',
+                      'Rent Smart',
                       style: theme.textTheme.displayLarge?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
