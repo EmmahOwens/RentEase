@@ -1,23 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'core/theme/airbnb_theme.dart';
 import 'core/theme/theme_provider.dart';
 import 'core/navigation/auth_wrapper.dart';
-import 'features/auth/providers/auth_provider.dart';
 import 'features/payments/providers/payment_provider.dart';
 import 'features/messages/providers/message_provider.dart';
-import 'package:firebase_core/firebase_core.dart';
-
-class PreferencesService {
-  static Future<void> init() async {
-    await SharedPreferences.getInstance();
-  }
-}
+import 'features/auth/providers/auth_provider.dart'; // Import AuthProvider
+import 'package:firebase_core/firebase_core.dart'; // Import Firebase Core
+import 'core/services/firebase_messaging_service.dart'; // Import Messaging Service
+import 'firebase_options.dart'; // Import Firebase Options
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+<<<<<<< HEAD
 
   if(kIsWeb) {
     Firebase.initializeApp(options: FirebaseOptions(
@@ -38,6 +34,15 @@ void main() async {
       debugPrint("Error initializing Firebase: $e");
     }
   }
+=======
+  // Initialize Firebase with platform-specific options
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
+  // Initialize Firebase Messaging Service (run async, don't await)
+  FirebaseMessagingService().initialize(); 
+>>>>>>> 5964a33 (This might be the time I actually deploy this to Firebase.)
 
   runApp(const MyApp());
 }
@@ -52,14 +57,21 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<ThemeProvider>(
           create: (_) => ThemeProvider(),
         ),
+        // AuthProvider needs to be created first so it's available to others
         ChangeNotifierProvider<AuthProvider>(
           create: (_) => AuthProvider(),
         ),
-        ChangeNotifierProvider<PaymentProvider>(
-          create: (_) => PaymentProvider(),
+        // Use ChangeNotifierProxyProvider to pass AuthProvider to PaymentProvider
+        ChangeNotifierProxyProvider<AuthProvider, PaymentProvider>(
+          create: (context) => PaymentProvider(context.read<AuthProvider>()),
+          update: (context, authProvider, previousPaymentProvider) =>
+              PaymentProvider(authProvider), // Recreate when AuthProvider changes (optional, depends on need)
         ),
-        ChangeNotifierProvider<MessageProvider>(
-          create: (_) => MessageProvider(),
+        // Use ChangeNotifierProxyProvider to pass AuthProvider to MessageProvider
+        ChangeNotifierProxyProvider<AuthProvider, MessageProvider>(
+          create: (context) => MessageProvider(context.read<AuthProvider>()),
+          update: (context, authProvider, previousMessageProvider) =>
+              MessageProvider(authProvider), // Recreate when AuthProvider changes (optional)
         ),
       ],
       child: Consumer<ThemeProvider>(

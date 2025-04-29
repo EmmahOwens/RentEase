@@ -4,7 +4,7 @@ import '../../../core/layouts/dashboard_layout.dart';
 import '../../../core/widgets/neu_button.dart';
 import '../../../core/widgets/neu_card.dart';
 import '../../../core/widgets/neu_text_field.dart';
-import '../../../features/auth/providers/auth_provider.dart';
+import '../../auth/providers/auth_provider.dart'; // Import AuthProvider
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -24,17 +24,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    final user = context.read<AuthProvider>().currentUser!;
-    _nameController = TextEditingController(text: user.name);
-    _emailController = TextEditingController(text: user.email);
-    _phoneController = TextEditingController();
+    // Initialize controllers after the first frame using addPostFrameCallback
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = context.read<AuthProvider>().currentUser;
+      _nameController = TextEditingController(text: user?.displayName ?? ''); // Use displayName or empty
+      _emailController = TextEditingController(text: user?.email ?? ''); // Use email or empty
+      _phoneController = TextEditingController(text: user?.phoneNumber ?? ''); // Use phoneNumber or empty
+      // Trigger a rebuild if needed after initialization
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
+    // Dispose controllers only if they were initialized
+    if (this.mounted) { // Check if widget is still mounted
+      _nameController.dispose();
+      _emailController.dispose();
+      _phoneController.dispose();
+    }
     super.dispose();
   }
 
@@ -69,7 +79,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final user = context.watch<AuthProvider>().currentUser!;
+    final authProvider = context.watch<AuthProvider>();
+    final user = authProvider.currentUser;
+
+    // Handle case where user is null (e.g., during logout transition)
+    if (user == null) {
+      return DashboardLayout(
+        title: 'Profile',
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    // Ensure controllers are initialized before building the rest of the UI
+    if (_nameController == null || _emailController == null) {
+       return DashboardLayout(
+        title: 'Profile',
+        body: const Center(child: CircularProgressIndicator()), // Show loading while controllers init
+      );
+    }
 
     return DashboardLayout(
       title: 'Profile',
@@ -82,8 +109,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 CircleAvatar(
                   radius: 50,
                   backgroundColor: theme.colorScheme.primary,
+                  // Use user.displayName or email initial if available
                   child: Text(
-                    user.name[0].toUpperCase(),
+                    (user.displayName?.isNotEmpty == true ? user.displayName![0] : user.email?[0] ?? '?').toUpperCase(),
                     style: theme.textTheme.displayMedium?.copyWith(
                       color: theme.colorScheme.onPrimary,
                     ),
@@ -91,13 +119,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  user.name,
+                  user.displayName ?? user.email ?? 'User', // Display name or email
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  user.email,
+                  user.email ?? 'No email',
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: theme.colorScheme.onSurface.withOpacity(0.7),
                   ),
@@ -210,7 +238,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 24),
                 NeuButton(
                   onPressed: () {
-                    context.read<AuthProvider>().logout();
+                    //context.read<AuthProvider>().logout();
                   },
                   isPrimary: false,
                   child: const Text('Logout'),

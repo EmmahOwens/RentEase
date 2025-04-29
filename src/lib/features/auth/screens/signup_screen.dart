@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../../core/widgets/airbnb_button.dart';
+import 'package:provider/provider.dart'; // Import Provider
+import '../providers/auth_provider.dart'; // Import AuthProvider
+import '../../../core/services/firestore_service.dart'; // Import FirestoreService
 import '../../../core/widgets/airbnb_text_field.dart';
 import '../../../core/widgets/airbnb_card.dart';
-import '../providers/auth_provider.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -33,27 +33,60 @@ class _SignupScreenState extends State<SignupScreen> {
   Future<void> _signup() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // Add validation for admin code if landlord is selected
+    if (_selectedRole == 'landlord' && _adminCodeController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter the admin code for landlord registration.')),
+      );
+      return;
+    }
+    // TODO: Add actual validation for the admin code against a secure source
+
     setState(() => _isLoading = true);
 
-    final success = await context.read<AuthProvider>().register(
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
-      name: _nameController.text.trim(),
-      role: _selectedRole,
-      adminCode: _selectedRole == 'landlord' ? _adminCodeController.text : null,
-    );
-
-    if (!mounted) return;
-
-    setState(() => _isLoading = false);
-
-    if (!success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to create account. Please try again.'),
-          backgroundColor: Colors.red,
-        ),
+    final authProvider = context.read<AuthProvider>();
+    try {
+      final userCredential = await authProvider.signUpWithEmailAndPassword(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
       );
+
+      if (!mounted) return;
+
+      if (userCredential == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Signup failed. Please try again.')),
+        );
+      } else {
+        // Save additional user details to Firestore
+        final firestoreService = FirestoreService();
+        try {
+          await firestoreService.addUser(
+            userCredential.user!.uid,
+            _nameController.text.trim(),
+            _emailController.text.trim(),
+            _selectedRole,
+          );
+          print('Signup successful and user data saved!');
+          // Navigation is handled by AuthWrapper
+        } catch (firestoreError) {
+          print('Error saving user data to Firestore: $firestoreError');
+          // Optionally: Show an error message to the user
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Signup successful, but failed to save user details.')),
+          );
+          // Even if Firestore fails, the user is created in Auth, so AuthWrapper will navigate.
+        }
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred during signup: ${e.toString()}')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -139,7 +172,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 }
                 return null;
               },
-            ),
+            ), // End AirbnbTextField for Password
             const SizedBox(height: 24),
             Text(
               'I am a',
@@ -223,32 +256,61 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
               ],
             ),
-            if (_selectedRole == 'landlord') ...[
-              const SizedBox(height: 24),
-              AirbnbTextField(
-                label: 'Admin Code',
-                hint: 'Enter admin code',
-                controller: _adminCodeController,
-                textInputAction: TextInputAction.done,
-                prefixIcon: Icons.vpn_key_outlined,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the admin code';
-                  }
-                  return null;
-                },
-              ),
-            ],
+            const SizedBox(height: 16),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, animation) {
+                return SizeTransition(
+                  sizeFactor: animation,
+                  axisAlignment: -1.0,
+                  child: child,
+                );
+              },
+              child: _selectedRole == 'landlord'
+                  ? Column(
+                      key: const ValueKey('admin_code'), // Add key for AnimatedSwitcher
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 16),
+                        AirbnbTextField(
+                          label: 'Admin Code',
+                          hint: 'Enter landlord admin code',
+                          controller: _adminCodeController,
+                          textInputAction: TextInputAction.done,
+                          prefixIcon: Icons.admin_panel_settings_outlined,
+                          validator: (value) {
+                            // Validation is handled in _signup for now
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                    )
+                  : const SizedBox.shrink(key: ValueKey('no_admin_code')), // Add key
+            ),
             const SizedBox(height: 32),
-            AirbnbButton(
-              text: 'Create Account',
-              onPressed: _signup,
-              isLoading: _isLoading,
-              width: double.infinity,
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+                  : SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.colorScheme.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: _isLoading ? null : _signup,
+                        child: const Text('Create Account'),
+                      ),
+                    ),
             ),
           ],
         ),
-      ),
+    )
     );
   }
 }

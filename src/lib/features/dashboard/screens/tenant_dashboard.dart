@@ -6,7 +6,7 @@ import '../../../core/models/payment.dart';
 import '../../../core/widgets/airbnb_button.dart';
 import '../../../core/widgets/airbnb_card.dart';
 import '../../../features/payments/providers/payment_provider.dart';
-import '../../../features/auth/providers/auth_provider.dart';
+import '../../auth/providers/auth_provider.dart'; // Import AuthProvider
 import '../../payments/screens/make_payment_screen.dart';
 import '../../messages/screens/messages_screen.dart';
 
@@ -16,10 +16,19 @@ class TenantDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final user = context.watch<AuthProvider>().currentUser!;
+    final authProvider = context.watch<AuthProvider>(); // Get AuthProvider
+    final user = authProvider.currentUser; // Get the current user
+
+    // Handle case where user might be null briefly during auth state changes
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final payments = context.watch<PaymentProvider>();
-    final userPayments = payments.getPaymentsForUser(user.id);
-    final totalPaid = payments.getTotalPaymentsForUser(user.id);
+    final userPayments = payments.getPaymentsForUser(user.uid);
+    final totalPaid = payments.getTotalPaymentsForUser(user.uid);
     final currencyFormatter = NumberFormat.currency(
       symbol: 'UGX ',
       decimalDigits: 0,
@@ -42,7 +51,7 @@ class TenantDashboard extends StatelessWidget {
             backgroundColor: theme.scaffoldBackgroundColor,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
-                'Welcome, ${user.name.split(' ')[0]}',
+                'Welcome, ${user.displayName?.split(' ')[0] ?? 'Guest'}',
                 style: theme.textTheme.titleLarge?.copyWith(
                   color: theme.colorScheme.onSurface,
                 ),

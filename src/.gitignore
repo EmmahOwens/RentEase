@@ -46,3 +46,6 @@ app.*.map.json
 
 # Local Netlify folder
 .netlify
+
+# Firebase Options
+firebase_options.dart

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/layouts/dashboard_layout.dart';
 import '../../../core/widgets/neu_card.dart';
 import '../../../core/theme/theme_provider.dart';
-import '../../../features/auth/providers/auth_provider.dart';
+import '../../auth/providers/auth_provider.dart'; // Import AuthProvider
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -14,7 +13,8 @@ class SettingsScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final themeProvider = context.watch<ThemeProvider>();
     final authProvider = context.watch<AuthProvider>();
-    final user = authProvider.currentUser;
+    final user = authProvider.currentUser; // No need for '!'
+    final userRole = authProvider.userRole; // Get user role from provider
 
     return DashboardLayout(
       title: 'Settings',
@@ -39,7 +39,8 @@ class SettingsScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          if (user?.role == 'landlord') ...[
+          // Conditionally show Admin Code section based on user role and null check
+          if (user != null && userRole == 'landlord') ...[
             _buildSection(
               context,
               'Admin Code',
@@ -167,20 +168,59 @@ class SettingsScreen extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 24),
+          _buildSection(
+            context,
+            'Account',
+            [
+              ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text('Sign Out'),
+                onTap: () async {
+                  // Show confirmation dialog
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Confirm Sign Out'),
+                      content: const Text('Are you sure you want to sign out?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: const Text('Sign Out'),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirm == true) {
+                    await authProvider.signOut();
+                    // Navigation is handled by AuthWrapper
+                  }
+                },
+              ),
+            ],
+            isDestructive: true, // Mark this section as destructive
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildSection(BuildContext context, String title, List<Widget> children) {
+  Widget _buildSection(BuildContext context, String title, List<Widget> children, {bool isDestructive = false}) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle( // Changed from const TextStyle
             fontSize: 18,
             fontWeight: FontWeight.bold,
+            color: isDestructive ? theme.colorScheme.error : null, // Added conditional color
           ),
         ),
         const SizedBox(height: 8),
@@ -218,25 +258,13 @@ class SettingsScreen extends StatelessWidget {
               onPressed: () async {
                 final newCode = adminCodeController.text.trim();
                 if (newCode.isNotEmpty) {
-                  try {
-                    await FirebaseFirestore.instance
-                        .collection('settings')
-                        .doc('adminCode')
-                        .set({'code': newCode});
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Admin code updated successfully'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Failed to update admin code: $e'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
+                  // Placeholder for updating admin code locally or via another backend
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Admin code update functionality needs implementation'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
                 }
                 Navigator.pop(context);
               },

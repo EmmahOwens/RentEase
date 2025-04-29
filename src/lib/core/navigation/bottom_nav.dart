@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../features/auth/providers/auth_provider.dart';
 import '../../features/dashboard/screens/tenant_dashboard.dart';
 import '../../features/dashboard/screens/landlord_dashboard.dart';
 import '../../features/payments/screens/transaction_history_screen.dart';
@@ -19,11 +18,13 @@ class _AppBottomNavigationState extends State<AppBottomNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<AuthProvider>().currentUser!;
-    final isTenant = user.role == 'tenant';
+    // TODO: Implement logic to determine user role (tenant/landlord)
+    // final authProvider = context.watch<AuthProvider>(); // Access AuthProvider if needed
+    // final bool isUserTenant = true; // Replace with actual role logic
 
     final List<Widget> pages = [
-      isTenant ? const TenantDashboard() : const LandlordDashboard(),
+      // Defaulting to TenantDashboard for now. Update when role logic is added.
+      const TenantDashboard(), 
       const TransactionHistoryScreen(),
       const ProfileScreen(),
       const SettingsScreen(),

@@ -1,16 +1,1 @@
-{
-  "hosting": {
-    "public": "src",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  }
-}
+{"flutter":{"platforms":{"android":{"default":{"projectId":"rent-smart256","appId":"1:593390512967:android:8d54a608fb24109ad0ba62","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"rent-smart256","configurations":{"android":"1:593390512967:android:8d54a608fb24109ad0ba62","ios":"1:593390512967:ios:97482749c49515bed0ba62","macos":"1:593390512967:ios:97482749c49515bed0ba62","web":"1:593390512967:web:344efd7a7b9fc2a7d0ba62","windows":"1:593390512967:web:2d2248a806737b57d0ba62"}}}}}}

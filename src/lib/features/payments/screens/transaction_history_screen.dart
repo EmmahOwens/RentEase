@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rent_smart/features/auth/providers/auth_provider.dart';
 import '../../../core/layouts/dashboard_layout.dart';
 import '../../../core/widgets/neu_card.dart';
 import '../../../core/widgets/transaction_card.dart';
 import '../providers/payment_provider.dart';
-import '../../../features/auth/providers/auth_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class TransactionHistoryScreen extends StatelessWidget {
@@ -15,9 +15,9 @@ class TransactionHistoryScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final user = context.watch<AuthProvider>().currentUser!;
     final payments = context.watch<PaymentProvider>();
-    final userPayments = payments.getPaymentsForUser(user.id);
-    final totalPaid = payments.getTotalPaymentsForUser(user.id);
-    final paymentMethods = payments.getPaymentMethodDistribution(user.id);
+    final userPayments = payments.getPaymentsForUser(user.uid);
+    final totalPaid = payments.getTotalPaymentsForUser(user.uid);
+    final paymentMethods = payments.getPaymentMethodDistribution(user.uid);
 
     return DashboardLayout(
       title: 'Transaction History',

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:rent_smart/features/auth/providers/auth_provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/layouts/dashboard_layout.dart';
 import '../../../core/models/payment.dart';
 import '../../../core/widgets/neu_button.dart';
 import '../../../core/widgets/neu_text_field.dart';
 import '../../../core/widgets/payment_method_card.dart';
-import '../../../features/auth/providers/auth_provider.dart';
 import 'card_payment_screen.dart';
 import 'mobile_money_screen.dart';
 import 'payment_confirmation_screen.dart';
@@ -82,7 +82,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen> {
     if (paymentSuccess == true) {
       final payment = Payment(
         id: const Uuid().v4(),
-        userId: context.read<AuthProvider>().currentUser!.id,
+        userId: context.read<AuthProvider>().currentUser!.uid,
         amount: amount,
         status: PaymentStatus.completed,
         method: _selectedMethod!,

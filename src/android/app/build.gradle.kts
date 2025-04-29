@@ -49,12 +49,16 @@ android {
 }
 
 dependencies {
+<<<<<<< HEAD
     implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-database-ktx")
+=======
+    implementation(kotlin("stdlib-jdk7"))
+>>>>>>> 5964a33 (This might be the time I actually deploy this to Firebase.)
 }
 
 apply(plugin = "com.google.gms.google-services")

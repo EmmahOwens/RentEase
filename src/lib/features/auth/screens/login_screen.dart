@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart'; // Import Provider
+import '../providers/auth_provider.dart'; // Import AuthProvider
 import '../../../core/widgets/airbnb_button.dart';
 import '../../../core/widgets/airbnb_text_field.dart';
-import '../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -29,22 +29,33 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
 
-    final success = await context.read<AuthProvider>().login(
-      _emailController.text.trim(),
-      _passwordController.text,
-    );
-
-    if (!mounted) return;
-
-    setState(() => _isLoading = false);
-
-    if (!success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid email or password'),
-          backgroundColor: Colors.red,
-        ),
+    final authProvider = context.read<AuthProvider>();
+    try {
+      final userCredential = await authProvider.signInWithEmailAndPassword(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
       );
+
+      // Check mounted before showing SnackBar
+      if (!mounted) return;
+
+      if (userCredential == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login failed. Please check your credentials.')),
+        );
+      }
+      // Navigation is handled by AuthWrapper based on auth state changes
+    } catch (e) {
+      // Check mounted before showing SnackBar
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: ${e.toString()}')),
+      );
+    } finally {
+      // Check mounted before calling setState
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -62,9 +73,11 @@ class _LoginScreenState extends State<LoginScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Form(
+              key: _formKey,
+              child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
             Text(

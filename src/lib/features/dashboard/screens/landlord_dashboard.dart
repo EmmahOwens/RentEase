@@ -1,4 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:rent_smart/core/constants.dart';
+import 'package:rent_smart/core/widgets/custom_button.dart';
+import 'package:rent_smart/features/properties/models/property.dart'; // Import Property model
+import 'package:rent_smart/features/properties/screens/add_property_screen.dart'; // Import AddPropertyScreen
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -6,28 +12,33 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../core/models/payment.dart';
 import '../../../core/widgets/airbnb_card.dart';
 import '../../../features/payments/providers/payment_provider.dart';
-import '../../../features/auth/providers/auth_provider.dart';
 import '../../messages/screens/messages_screen.dart';
 
-class LandlordDashboard extends StatelessWidget {
+class LandlordDashboard extends StatefulWidget { // Changed from StatelessWidget
   const LandlordDashboard({super.key});
+
+  @override
+  State<LandlordDashboard> createState() => _LandlordDashboardState(); // Added createState
+}
+
+class _LandlordDashboardState extends State<LandlordDashboard> { // Existing State class
+  // Moved helper methods and build logic into the State class
+
+  final currencyFormatter = NumberFormat.currency(
+    symbol: 'UGX ',
+    decimalDigits: 0,
+  );
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final user = context.watch<AuthProvider>().currentUser!;
     final payments = context.watch<PaymentProvider>();
     final allPayments = payments.payments;
     final totalRevenue = allPayments
         .where((p) => p.status == PaymentStatus.completed)
         .fold(0.0, (sum, p) => sum + p.amount);
 
-    final currencyFormatter = NumberFormat.currency(
-      symbol: 'UGX ',
-      decimalDigits: 0,
-    );
-
-    // Mock data for demonstration
+    // Mock data for demonstration (can remain here or move to initState if needed)
     final propertyDetails = {
       'totalUnits': 10,
       'occupiedUnits': 8,
@@ -93,7 +104,8 @@ class LandlordDashboard extends StatelessWidget {
                         child: _buildStatCard(
                           context,
                           'Total Units',
-                          '${propertyDetails['totalUnits']}',
+                          // TODO: Replace with Firestore property count
+                          'Loading...',
                           FontAwesomeIcons.building,
                         ),
                       ),
@@ -114,21 +126,24 @@ class LandlordDashboard extends StatelessWidget {
                             _buildPropertyStat(
                               context,
                               'Occupied',
-                              '${propertyDetails['occupiedUnits']}/${propertyDetails['totalUnits']}',
+                              // TODO: Replace with Firestore occupied units
+                              'Loading...',
                               FontAwesomeIcons.userCheck,
                               Colors.green,
                             ),
                             _buildPropertyStat(
                               context,
                               'Vacant',
-                              '${propertyDetails['totalUnits']! - propertyDetails['occupiedUnits']!}',
+                              // TODO: Replace with Firestore vacant units
+                              'Loading...',
                               FontAwesomeIcons.doorOpen,
                               theme.colorScheme.primary,
                             ),
                             _buildPropertyStat(
                               context,
                               'Maintenance',
-                              '${propertyDetails['maintenanceRequests']}',
+                              // TODO: Replace with Firestore maintenance requests
+                              'Loading...',
                               FontAwesomeIcons.wrench,
                               Colors.orange,
                             ),
@@ -227,6 +242,7 @@ class LandlordDashboard extends StatelessWidget {
     );
   }
 
+  // Moved helper methods inside the State class
   Widget _buildStatCard(
     BuildContext context,
     String title,
@@ -239,26 +255,24 @@ class LandlordDashboard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Text(
+                title,
+                style: theme.textTheme.titleMedium,
+              ),
               FaIcon(
                 icon,
-                size: 18,
+                size: 20,
                 color: theme.colorScheme.primary,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  title,
-                  style: theme.textTheme.bodyMedium,
-                ),
               ),
             ],
           ),
           const SizedBox(height: 8),
           Text(
             value,
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -276,41 +290,36 @@ class LandlordDashboard extends StatelessWidget {
     final theme = Theme.of(context);
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: FaIcon(
-            icon,
-            color: color,
-            size: 20,
-          ),
-        ),
+        FaIcon(icon, size: 24, color: color),
         const SizedBox(height: 8),
         Text(
           value,
           style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.bold,
           ),
         ),
+        const SizedBox(height: 4),
         Text(
           label,
-          style: theme.textTheme.bodyMedium,
+          style: theme.textTheme.bodySmall,
         ),
       ],
     );
   }
 
-  BarChartGroupData _createBarGroup(int x, double value, BuildContext context) {
+  BarChartGroupData _createBarGroup(
+    int x,
+    double y,
+    BuildContext context,
+  ) {
+    final theme = Theme.of(context);
     return BarChartGroupData(
       x: x,
       barRods: [
         BarChartRodData(
-          toY: value,
-          color: Theme.of(context).colorScheme.primary,
-          width: 20,
+          toY: y,
+          color: theme.colorScheme.primary,
+          width: 16,
           borderRadius: BorderRadius.circular(4),
         ),
       ],
@@ -323,45 +332,34 @@ class LandlordDashboard extends StatelessWidget {
       symbol: 'UGX ',
       decimalDigits: 0,
     );
+    final dateFormatter = DateFormat('MMM d, yyyy');
 
-    IconData getMethodIcon() {
-      switch (payment.method) {
-        case PaymentMethod.card:
-          return FontAwesomeIcons.creditCard;
-        case PaymentMethod.mtnMoney:
-          return FontAwesomeIcons.mobile;
-        case PaymentMethod.airtelMoney:
-          return FontAwesomeIcons.mobileScreen;
-      }
-    }
-
-    Color getStatusColor() {
-      switch (payment.status) {
-        case PaymentStatus.completed:
-          return Colors.green;
-        case PaymentStatus.pending:
-          return Colors.orange;
-        case PaymentStatus.processing:
-          return theme.colorScheme.primary;
-        case PaymentStatus.failed:
-          return Colors.red;
-      }
+    IconData statusIcon;
+    Color statusColor;
+    switch (payment.status) {
+      case PaymentStatus.completed:
+        statusIcon = FontAwesomeIcons.solidCircleCheck;
+        statusColor = Colors.green;
+        break;
+      case PaymentStatus.pending:
+        statusIcon = FontAwesomeIcons.clock;
+        statusColor = Colors.orange;
+        break;
+      case PaymentStatus.failed:
+        statusIcon = FontAwesomeIcons.solidCircleXmark;
+        statusColor = Colors.red;
+        break;
+      case PaymentStatus.processing:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
 
     return AirbnbCard(
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: FaIcon(
-              getMethodIcon(),
-              color: theme.colorScheme.primary,
-              size: 20,
-            ),
+          CircleAvatar(
+            backgroundColor: statusColor.withOpacity(0.1),
+            child: FaIcon(statusIcon, size: 18, color: statusColor),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -369,31 +367,24 @@ class LandlordDashboard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  currencyFormatter.format(payment.amount),
+                  'Payment from Tenant', // Replace with actual tenant name if available
                   style: theme.textTheme.titleMedium,
+                  overflow: TextOverflow.ellipsis,
                 ),
+                const SizedBox(height: 4),
                 Text(
-                  payment.formattedDate,
-                  style: theme.textTheme.bodyMedium,
+                  dateFormatter.format(payment.date),
+                  style: theme.textTheme.bodySmall,
                 ),
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 6,
-            ),
-            decoration: BoxDecoration(
-              color: getStatusColor().withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              payment.status.toString().split('.').last.toUpperCase(),
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: getStatusColor(),
-                fontWeight: FontWeight.w600,
-              ),
+          const SizedBox(width: 16),
+          Text(
+            currencyFormatter.format(payment.amount),
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: statusColor,
             ),
           ),
         ],

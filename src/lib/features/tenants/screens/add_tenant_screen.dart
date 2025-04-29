@@ -1,4 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:rent_smart/core/constants.dart';
+import 'package:rent_smart/core/widgets/custom_button.dart';
+import 'package:rent_smart/core/widgets/custom_text_field.dart';
+import 'package:rent_smart/features/tenants/models/tenant.dart'; // Assuming Tenant model exists
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../core/widgets/airbnb_button.dart';
 import '../../../core/widgets/airbnb_card.dart';
@@ -77,17 +83,66 @@ class _AddTenantScreenState extends State<AddTenantScreen> {
   }
 
   Future<void> _saveTenant() async {
-    if (!_formKey.currentState!.validate()) return;
-    
-    setState(() => _isLoading = true);
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
 
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
+      // TODO: Add loading indicator
+      setState(() {
+        // _isLoading = true; // Uncomment when loading indicator is added
+      });
 
-    if (!mounted) return;
+      try {
+        // Implement actual tenant creation with Firebase
+        final newTenant = Tenant(
+          id: '', // Firestore generates ID
+          name: _nameController.text,
+          email: _emailController.text,
+          phone: _phoneController.text,
+          unitNumber: _unitController.text, // Corrected controller
+          monthlyRent: double.tryParse(_rentController.text) ?? 0.0, // Corrected controller
+          leaseStart: _leaseStart ?? DateTime.now(), // Corrected variable & provide default
+          leaseEnd: _leaseEnd ?? DateTime.now().add(const Duration(days: 365)), // Corrected variable & provide default
+          status: TenantStatus.pending, // Use enum
+          joinedDate: DateTime.now(), // Use joinedDate
+        );
 
-    // TODO: Implement actual tenant creation
-    Navigator.pop(context);
+        await FirebaseFirestore.instance.collection('tenants').add(
+          newTenant.toFirestore()..['createdAt'] = FieldValue.serverTimestamp(), // Add server timestamp
+        );
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Tenant added successfully!')),
+          );
+          Navigator.of(context).pop(); // Go back after saving
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to add tenant: $e')),
+          );
+        }
+      } finally {
+        // TODO: Hide loading indicator
+        // if (mounted) {
+        //   setState(() {
+        //     _isLoading = false;
+        //   });
+        // }
+      }
+
+      // TODO: Implement actual tenant creation
+      // print('Tenant Name: ${_nameController.text}');
+      // print('Email: ${_emailController.text}');
+      // print('Phone: ${_phoneController.text}');
+      // print('Unit Number: ${_unitController.text}');
+      // print('Monthly Rent: ${_rentController.text}');
+      // print('Lease Start Date: ${_leaseStart}');
+      // print('Lease End Date: ${_leaseEnd}');
+
+      // // Navigate back or show success message
+      // Navigator.of(context).pop();
+    }
   }
 
   @override
@@ -415,7 +470,7 @@ class _AddTenantScreenState extends State<AddTenantScreen> {
                 AirbnbButton(
                   text: 'Add Tenant',
                   onPressed: _saveTenant,
-                  isLoading: _isLoading,
+                  // isLoading: _isLoading, // Uncomment when loading indicator is added
                   icon: FontAwesomeIcons.check,
                 ),
               ],

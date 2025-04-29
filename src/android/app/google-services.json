@@ -1,13 +1,23 @@
 {
   "project_info": {
+<<<<<<< HEAD
     "project_number": "910794508112",
     "project_id": "rentease256",
     "storage_bucket": "rentease256.firebasestorage.app"
+=======
+    "project_number": "593390512967",
+    "project_id": "rent-smart256",
+    "storage_bucket": "rent-smart256.firebasestorage.app"
+>>>>>>> 5964a33 (This might be the time I actually deploy this to Firebase.)
   },
   "client": [
     {
       "client_info": {
+<<<<<<< HEAD
         "mobilesdk_app_id": "1:910794508112:android:7877f21c2aab82ca270e55",
+=======
+        "mobilesdk_app_id": "1:593390512967:android:8d54a608fb24109ad0ba62",
+>>>>>>> 5964a33 (This might be the time I actually deploy this to Firebase.)
         "android_client_info": {
           "package_name": "com.owen.rentsmart"
         }
@@ -15,7 +25,11 @@
       "oauth_client": [],
       "api_key": [
         {
+<<<<<<< HEAD
           "current_key": "AIzaSyBKxBBDCUfcbyjvz20zkaJHGq3iWwB_8Vg"
+=======
+          "current_key": "AIzaSyADCA5Wn-vORrth2vmJ0L21NE60UJCs-Xk"
+>>>>>>> 5964a33 (This might be the time I actually deploy this to Firebase.)
         }
       ],
       "services": {

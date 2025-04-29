@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../../../core/widgets/airbnb_button.dart';
-import '../../../core/widgets/airbnb_card.dart';
+import 'package:rent_smart/core/constants.dart';
+import 'package:rent_smart/core/widgets/airbnb_button.dart'; // Added missing import
+import 'package:rent_smart/core/widgets/airbnb_card.dart'; // Added missing import
+import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // Added missing import
 import '../models/tenant.dart';
 import 'tenant_details_screen.dart';
 import 'add_tenant_screen.dart';
@@ -14,57 +16,52 @@ class TenantManagementScreen extends StatefulWidget {
 }
 
 class _TenantManagementScreenState extends State<TenantManagementScreen> {
+  final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   TenantStatus? _selectedStatus;
 
-  // Mock data for demonstration
-  final List<Tenant> _tenants = [
-    Tenant(
-      id: '1',
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      phone: '+256 701 234 567',
-      unitNumber: 'A101',
-      leaseStart: DateTime(2023, 6, 1),
-      leaseEnd: DateTime(2024, 5, 31),
-      monthlyRent: 800000,
-      status: TenantStatus.active,
-      joinedDate: DateTime(2023, 6, 1),
-    ),
-    Tenant(
-      id: '2',
-      name: 'Jane Smith',
-      email: 'jane.smith@example.com',
-      phone: '+256 702 345 678',
-      unitNumber: 'B202',
-      leaseStart: DateTime(2023, 8, 1),
-      leaseEnd: DateTime(2024, 7, 31),
-      monthlyRent: 950000,
-      status: TenantStatus.active,
-      joinedDate: DateTime(2023, 8, 1),
-    ),
-    Tenant(
-      id: '3',
-      name: 'Michael Johnson',
-      email: 'michael.j@example.com',
-      phone: '+256 703 456 789',
-      unitNumber: 'C303',
-      leaseStart: DateTime(2024, 2, 1),
-      leaseEnd: DateTime(2024, 3, 31),
-      monthlyRent: 750000,
-      status: TenantStatus.pending,
-      joinedDate: DateTime(2024, 2, 1),
-    ),
-  ];
+  // Remove commented out static list and getter
+  // final List<Tenant> _tenants = [...];
+  // List<Tenant> get filteredTenants { ... }
 
-  List<Tenant> get filteredTenants {
-    return _tenants.where((tenant) {
-      final matchesSearch = tenant.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          tenant.email.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          tenant.unitNumber.toLowerCase().contains(_searchQuery.toLowerCase());
-      final matchesStatus = _selectedStatus == null || tenant.status == _selectedStatus;
-      return matchesSearch && matchesStatus;
-    }).toList();
+  @override
+  void initState() {
+    super.initState(); // Correct initState: call super.initState()
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose(); // Dispose the controller
+    super.dispose();
+  }
+
+  Stream<QuerySnapshot> _getTenantsStream() {
+    Query query = FirebaseFirestore.instance.collection('tenants');
+
+    // Apply status filter
+    if (_selectedStatus != null) {
+      query = query.where('status', isEqualTo: _selectedStatus!.name); // Use .name for enum string
+    }
+
+    // Apply search query (simple prefix match on name for demonstration)
+    // Firestore doesn't support case-insensitive 'contains' directly without third-party services like Algolia.
+    // This searches for names starting with the query (case-sensitive).
+    // For more robust search, consider searching multiple fields or using a search service.
+    if (_searchQuery.isNotEmpty) {
+      query = query
+          .where('name', isGreaterThanOrEqualTo: _searchQuery)
+          .where('name', isLessThanOrEqualTo: '$_searchQuery\uf8ff');
+    }
+
+    // Add ordering if needed, e.g., by name
+    query = query.orderBy('name');
+
+    return query.snapshots();
   }
 
   @override
@@ -91,7 +88,7 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(kDefaultPadding), // Use constant
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -99,104 +96,186 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
                     child: Column(
                       children: [
                         TextFormField(
+                          controller: _searchController, // Assign controller
                           decoration: InputDecoration(
-                            hintText: 'Search tenants...',
+                            hintText: 'Search tenants by name...', // Updated hint
                             prefixIcon: const Icon(FontAwesomeIcons.magnifyingGlass),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
+                            // Add clear button
+                            suffixIcon: _searchQuery.isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      // setState is called by the listener
+                                    },
+                                  )
+                                : null,
                           ),
-                          onChanged: (value) {
-                            setState(() => _searchQuery = value);
-                          },
+                          // onChanged removed, using listener in initState
                         ),
                         const SizedBox(height: 16),
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
-                            children: TenantStatus.values.map((status) {
-                              return Padding(
+                            children: [
+                              // Add 'All' filter chip
+                              Padding(
                                 padding: const EdgeInsets.only(right: 8),
                                 child: FilterChip(
-                                  label: Text(status.toString().split('.').last),
-                                  selected: _selectedStatus == status,
+                                  label: const Text('All'),
+                                  selected: _selectedStatus == null,
                                   onSelected: (selected) {
                                     setState(() {
-                                      _selectedStatus = selected ? status : null;
+                                      _selectedStatus = null;
                                     });
                                   },
                                 ),
-                              );
-                            }).toList(),
+                              ),
+                              // Status filter chips
+                              ...TenantStatus.values.map((status) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: FilterChip(
+                                    label: Text(status.displayTitle), // Use displayTitle
+                                    selected: _selectedStatus == status,
+                                    onSelected: (selected) {
+                                      setState(() {
+                                        _selectedStatus = selected ? status : null;
+                                      });
+                                    },
+                                    // Optional: Add avatar for visual distinction
+                                    // avatar: CircleAvatar(
+                                    //   backgroundColor: status.color.withOpacity(0.8),
+                                    //   radius: 8,
+                                    // ),
+                                  ),
+                                );
+                              }).toList(),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Tenants (${filteredTenants.length})',
-                        style: theme.textTheme.titleLarge,
-                      ),
-                      AirbnbButton(
-                        text: 'Add Tenant',
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const AddTenantScreen(),
-                            ),
-                          );
-                        },
-                        icon: FontAwesomeIcons.plus,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  if (filteredTenants.isEmpty)
-                    AirbnbCard(
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
+                  // Use StreamBuilder to display tenant count and list
+                  StreamBuilder<QuerySnapshot>(
+                    stream: _getTenantsStream(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        // Show a loading indicator or shimmer effect while loading
+                        // return const Center(child: CircularProgressIndicator());
+                        // Or return the header part while loading data
+                        return _buildTenantListHeader(context, 0, true);
+                      }
+                      if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      }
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return Column(
                           children: [
-                            Icon(
-                              FontAwesomeIcons.userLarge,
-                              size: 48,
-                              color: theme.colorScheme.primary.withOpacity(0.5),
-                            ),
+                            _buildTenantListHeader(context, 0, false),
                             const SizedBox(height: 16),
-                            Text(
-                              'No tenants found',
-                              style: theme.textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Try adjusting your filters',
-                              style: theme.textTheme.bodyMedium,
-                            ),
+                            _buildEmptyState(theme),
                           ],
-                        ),
-                      ),
-                    )
-                  else
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: filteredTenants.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 8),
-                      itemBuilder: (context, index) {
-                        final tenant = filteredTenants[index];
-                        return _TenantCard(tenant: tenant);
-                      },
-                    ),
+                        );
+                      }
+
+                      final tenants = snapshot.data!.docs
+                          .map((doc) => Tenant.fromFirestore(doc))
+                          .toList();
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildTenantListHeader(context, tenants.length, false),
+                          const SizedBox(height: 16),
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: tenants.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 12), // Adjusted spacing
+                            itemBuilder: (context, index) {
+                              final tenant = tenants[index];
+                              return _TenantCard(tenant: tenant);
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // Helper widget for the list header (count and add button)
+  Widget _buildTenantListHeader(BuildContext context, int count, bool isLoading) {
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          isLoading ? 'Loading Tenants...' : 'Tenants ($count)',
+          style: theme.textTheme.titleLarge,
+        ),
+        AirbnbButton(
+          text: 'Add Tenant',
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AddTenantScreen(),
+              ),
+            );
+          },
+          icon: FontAwesomeIcons.plus,
+        ),
+      ],
+    );
+  }
+
+  // Helper widget for the empty state
+  Widget _buildEmptyState(ThemeData theme) {
+    return AirbnbCard(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 32.0), // Add padding
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                FontAwesomeIcons.usersSlash, // More relevant icon
+                size: 48,
+                color: theme.colorScheme.primary.withOpacity(0.5),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _searchQuery.isEmpty && _selectedStatus == null
+                    ? 'No tenants added yet'
+                    : 'No tenants match your criteria',
+                style: theme.textTheme.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _searchQuery.isEmpty && _selectedStatus == null
+                    ? 'Tap \'Add Tenant\' to get started.'
+                    : 'Try adjusting your search or filters.',
+                style: theme.textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -210,125 +289,123 @@ class _TenantCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    // Use the color from the TenantStatus enum directly
+    final statusColor = tenant.status.color;
 
-    Color getStatusColor() {
-      switch (tenant.status) {
-        case TenantStatus.active:
-          return Colors.green;
-        case TenantStatus.pending:
-          return Colors.orange;
-        case TenantStatus.inactive:
-          return Colors.red;
-      }
-    }
-
-    return AirbnbCard(
+    return InkWell(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => TenantDetailsScreen(tenant: tenant),
+            builder: (context) => TenantDetailsScreen(tenantId: tenant.id),
           ),
         );
       },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: theme.colorScheme.primary,
-                child: Text(
-                  tenant.name[0].toUpperCase(),
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
+      // Wrap with AirbnbCard for consistent styling
+      child: AirbnbCard(
+        padding: const EdgeInsets.all(kDefaultPadding), // Add padding
+        child: Column( // Use Column instead of Padding
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                  child: Text(
+                    tenant.name.isNotEmpty ? tenant.name[0].toUpperCase() : '?', // Handle empty name
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: theme.colorScheme.primary,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      tenant.name,
-                      style: theme.textTheme.titleMedium,
-                    ),
-                    Text(
-                      'Unit ${tenant.unitNumber}',
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: getStatusColor().withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  tenant.status.toString().split('.').last.toUpperCase(),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: getStatusColor(),
-                    fontWeight: FontWeight.w600,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        tenant.name,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        // Removed redundant style
+                      ),
+                      const SizedBox(height: 2), // Add small spacing
+                      Text(
+                        'Unit ${tenant.unitNumber}',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.textTheme.bodySmall?.color, // Use bodySmall color
+                        ),
+                        // Removed redundant style
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          const Divider(),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildDetailItem(
-                context,
-                'Monthly Rent',
-                tenant.formattedMonthlyRent,
-                FontAwesomeIcons.moneyBill,
-              ),
-              _buildDetailItem(
-                context,
-                'Lease Ends',
-                tenant.formattedLeaseEnd,
-                FontAwesomeIcons.calendar,
-              ),
-            ],
-          ),
-          if (tenant.isLeaseExpiringSoon) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    // Use status color with opacity
+                    color: statusColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    tenant.status.displayTitle, // Use displayTitle
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: statusColor, // Use status color
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
+            const Divider(),
+            const SizedBox(height: 12), // Adjusted spacing
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildDetailItem(
+                  context,
+                  'Monthly Rent',
+                  tenant.formattedMonthlyRent,
+                  FontAwesomeIcons.moneyBillWave, // Updated icon
+                ),
+                _buildDetailItem(
+                  context,
+                  'Lease Ends',
+                  tenant.formattedLeaseEnd,
+                  FontAwesomeIcons.calendarCheck, // Updated icon
+                  isWarning: tenant.isLeaseExpiringSoon, // Pass warning flag
+                ),
+              ],
+            ),
+            // Simplified lease expiring warning
+            if (tenant.isLeaseExpiringSoon) ...[
+              const SizedBox(height: 12),
+              Row(
                 children: [
-                  const Icon(
+                  Icon(
                     FontAwesomeIcons.triangleExclamation,
-                    color: Colors.orange,
-                    size: 16,
+                    color: Colors.orange[700], // Use specific orange shade
+                    size: 14,
                   ),
                   const SizedBox(width: 8),
                   Text(
                     'Lease expiring soon',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: Colors.orange,
+                      color: Colors.orange[800], // Use specific orange shade
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
-            ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -338,14 +415,18 @@ class _TenantCard extends StatelessWidget {
     String label,
     String value,
     IconData icon,
+    {bool isWarning = false} // Add optional warning flag
   ) {
     final theme = Theme.of(context);
+    final valueColor = isWarning ? Colors.orange[800] : theme.textTheme.bodyLarge?.color;
+    final iconColor = isWarning ? Colors.orange[700] : theme.colorScheme.primary;
+
     return Row(
       children: [
         Icon(
           icon,
           size: 16,
-          color: theme.colorScheme.primary,
+          color: iconColor,
         ),
         const SizedBox(width: 8),
         Column(
@@ -355,10 +436,12 @@ class _TenantCard extends StatelessWidget {
               label,
               style: theme.textTheme.bodySmall,
             ),
+            const SizedBox(height: 2), // Add small spacing
             Text(
               value,
-              style: theme.textTheme.bodyLarge?.copyWith(
+              style: theme.textTheme.bodyMedium?.copyWith( // Use bodyMedium for consistency
                 fontWeight: FontWeight.w600,
+                color: valueColor,
               ),
             ),
           ],

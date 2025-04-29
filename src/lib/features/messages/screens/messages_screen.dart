@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rent_smart/features/auth/providers/auth_provider.dart';
 import '../../../core/layouts/dashboard_layout.dart';
 import '../../../core/widgets/message_bubble.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/glass_card.dart';
 import '../providers/message_provider.dart';
-import '../../../features/auth/providers/auth_provider.dart';
 
 class MessagesScreen extends StatefulWidget {
   const MessagesScreen({super.key});
@@ -34,7 +34,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
     const landlordId = 'landlord123';
 
     context.read<MessageProvider>().sendMessage(
-      senderId: currentUser.id,
+      senderId: currentUser.uid,
       receiverId: landlordId,
       content: content,
     );
@@ -57,7 +57,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Widget build(BuildContext context) {
     final currentUser = context.watch<AuthProvider>().currentUser!;
     final messages = context.watch<MessageProvider>();
-    final conversation = messages.getMessagesForUser(currentUser.id);
+    final conversation = messages.getMessagesForUser(currentUser.uid);
 
     return DashboardLayout(
       title: 'Messages',
@@ -103,7 +103,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           final message = conversation[index];
                           return MessageBubble(
                             message: message,
-                            isCurrentUser: message.senderId == currentUser.id,
+                            isCurrentUser: message.senderId == currentUser.uid,
                           );
                         },
                       ),

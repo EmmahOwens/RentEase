@@ -1,9 +1,35 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 enum TenantStatus {
   active,
   pending,
-  inactive,
+  inactive;
+
+  // Helper to get a user-friendly title
+  String get displayTitle {
+    switch (this) {
+      case TenantStatus.active:
+        return 'Active';
+      case TenantStatus.pending:
+        return 'Pending';
+      case TenantStatus.inactive:
+        return 'Inactive';
+    }
+  }
+
+  // Helper to get a color associated with the status
+  Color get color {
+    switch (this) {
+      case TenantStatus.active:
+        return Colors.green; // Or use theme.colorScheme.primary
+      case TenantStatus.pending:
+        return Colors.orange; // Or use theme.colorScheme.secondary
+      case TenantStatus.inactive:
+        return Colors.grey; // Or use theme.disabledColor
+    }
+  }
 }
 
 class Tenant {
@@ -48,6 +74,48 @@ class Tenant {
     return daysRemaining <= 30 && daysRemaining > 0;
   }
 
+  // Factory constructor to create a Tenant from a Firestore document
+  factory Tenant.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    return Tenant(
+      id: doc.id,
+      name: data['name'] ?? '',
+      email: data['email'] ?? '',
+      phone: data['phone'] ?? '',
+      unitNumber: data['unitNumber'] ?? '',
+      monthlyRent: (data['monthlyRent'] as num?)?.toDouble() ?? 0.0,
+      leaseStart: (data['leaseStart'] as Timestamp?)?.toDate() ?? DateTime.now(), // Corrected field name
+      leaseEnd: (data['leaseEnd'] as Timestamp?)?.toDate() ?? DateTime.now(), // Corrected field name
+      status: TenantStatus.values.firstWhere(
+        (e) => e.toString().split('.').last.toLowerCase() == (data['status'] as String?)?.toLowerCase(), // More robust status parsing
+        orElse: () => TenantStatus.pending, // Default if status is missing or invalid
+      ),
+      profileImage: data['profileImage'] as String?,
+      documents: data['documents'] as Map<String, dynamic>?,
+      joinedDate: (data['joinedDate'] as Timestamp?)?.toDate() ?? DateTime.now(), // Use joinedDate field
+    );
+  }
+
+  // Method to convert a Tenant instance to a map for Firestore
+  Map<String, dynamic> toFirestore() {
+    return {
+      'name': name,
+      'email': email,
+      'phone': phone,
+      'unitNumber': unitNumber,
+      'monthlyRent': monthlyRent,
+      'leaseStart': Timestamp.fromDate(leaseStart), // Corrected field name
+      'leaseEnd': Timestamp.fromDate(leaseEnd), // Corrected field name
+      'status': status.toString().split('.').last,
+      'profileImage': profileImage,
+      'documents': documents,
+      'joinedDate': Timestamp.fromDate(joinedDate),
+      // Use FieldValue.serverTimestamp() only when creating, not updating
+      // 'createdAt': FieldValue.serverTimestamp(),
+    };
+  }
+
+  // Existing factory constructor (keep if needed for other purposes)
   factory Tenant.fromJson(Map<String, dynamic> json) {
     return Tenant(
       id: json['id'] as String,

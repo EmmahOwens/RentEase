@@ -11,6 +11,9 @@ class Payment {
   final PaymentMethod method;
   final DateTime date;
   final String? description;
+  final String? propertyId; // Optional: Link payment to a property
+  final String? tenantId; // Optional: Link payment to a tenant
+  final String? landlordId; // Optional: Link payment to a landlord
 
   Payment({
     required this.id,
@@ -20,6 +23,9 @@ class Payment {
     required this.method,
     required this.date,
     this.description,
+    this.propertyId,
+    this.tenantId,
+    this.landlordId,
   });
 
   String get formattedAmount {
@@ -47,6 +53,12 @@ class Payment {
       ),
       date: DateTime.parse(json['date'] as String),
       description: json['description'] as String?,
+<<<<<<< HEAD
+=======
+      propertyId: json['propertyId'] as String?,
+      tenantId: json['tenantId'] as String?,
+      landlordId: json['landlordId'] as String?,
+>>>>>>> 5964a33 (This might be the time I actually deploy this to Firebase.)
     );
   }
 
@@ -59,6 +71,9 @@ class Payment {
       'method': method.toString().split('.').last,
       'date': date.toIso8601String(),
       'description': description,
+      'propertyId': propertyId,
+      'tenantId': tenantId,
+      'landlordId': landlordId,
     };
   }
 }
