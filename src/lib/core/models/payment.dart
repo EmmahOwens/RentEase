@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 enum PaymentStatus { pending, processing, completed, failed }
@@ -40,25 +41,44 @@ class Payment {
     return DateFormat('MMM d, y').format(date);
   }
 
-  factory Payment.fromJson(Map<String, dynamic> json) {
+  factory Payment.fromFirestore(Map<String, dynamic> data) {
+    // Helper function for safe enum parsing
+    T? _parseEnum<T>(List<T> enumValues, String? value) {
+      if (value == null) return null;
+      try {
+        return enumValues.firstWhere(
+          (e) => e.toString().split('.').last == value,
+        );
+      } catch (e) {
+        return null; // Return null if value doesn't match any enum case
+      }
+    }
+
+    // Helper for safe DateTime parsing
+    DateTime? _parseDateTime(dynamic value) {
+      if (value is String) {
+        return DateTime.tryParse(value);
+      } else if (value is Timestamp) {
+        return value.toDate();
+      }
+      return null;
+    }
+
+    final statusString = data['status'] as String?;
+    final methodString = data['method'] as String?;
+    final dateValue = data['date'];
+
     return Payment(
-      id: json['id'] as String,
-      userId: json['userId'] as String,
-      amount: (json['amount'] as num).toDouble(),
-      status: PaymentStatus.values.firstWhere(
-        (e) => e.toString() == 'PaymentStatus.${json['status']}',
-      ),
-      method: PaymentMethod.values.firstWhere(
-        (e) => e.toString() == 'PaymentMethod.${json['method']}',
-      ),
-      date: DateTime.parse(json['date'] as String),
-      description: json['description'] as String?,
-<<<<<<< HEAD
-=======
-      propertyId: json['propertyId'] as String?,
-      tenantId: json['tenantId'] as String?,
-      landlordId: json['landlordId'] as String?,
->>>>>>> 5964a33 (This might be the time I actually deploy this to Firebase.)
+      id: data['id'] as String? ?? '', // Provide default or handle error
+      userId: data['userId'] as String? ?? '', // Provide default or handle error
+      amount: (data['amount'] as num?)?.toDouble() ?? 0.0,
+      status: _parseEnum(PaymentStatus.values, statusString) ?? PaymentStatus.pending, // Default status
+      method: _parseEnum(PaymentMethod.values, methodString) ?? PaymentMethod.card, // Default method
+      date: _parseDateTime(dateValue) ?? DateTime.now(), // Default date
+      description: data['description'] as String?,
+      propertyId: data['propertyId'] as String?,
+      tenantId: data['tenantId'] as String?,
+      landlordId: data['landlordId'] as String?,
     );
   }
 

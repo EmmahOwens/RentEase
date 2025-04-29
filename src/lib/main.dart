@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/airbnb_theme.dart';
@@ -13,28 +12,6 @@ import 'firebase_options.dart'; // Import Firebase Options
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-<<<<<<< HEAD
-
-  if(kIsWeb) {
-    Firebase.initializeApp(options: FirebaseOptions(
-        apiKey: "AIzaSyBwF8-9mbK8gMQX8sbUG5P4O76AXEDp06M",
-        authDomain: "rentease256.firebaseapp.com",
-        appId: "1:910794508112:web:50bb74bc1af3f1c7270e55",
-        messagingSenderId: "910794508112",
-        projectId: "rentease256"
-    ));
-  } else {
-    // Initialize SharedPreferences
-    await PreferencesService.init();
-
-    // Initialize Firebase with error handling
-    try {
-      await Firebase.initializeApp();
-    } catch (e) {
-      debugPrint("Error initializing Firebase: $e");
-    }
-  }
-=======
   // Initialize Firebase with platform-specific options
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -42,7 +19,6 @@ void main() async {
   
   // Initialize Firebase Messaging Service (run async, don't await)
   FirebaseMessagingService().initialize(); 
->>>>>>> 5964a33 (This might be the time I actually deploy this to Firebase.)
 
   runApp(const MyApp());
 }
