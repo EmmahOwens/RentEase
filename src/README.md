@@ -41,13 +41,13 @@ A modern rental management system built with Flutter that provides a comprehensi
 - Flutter SDK (version ^3.7.0)
 - Dart SDK
 - Firebase project setup
-- Android Studio or VS Code with Flutter extensions
+- Android Studio with Flutter extensions
 
 ### Installation
 
 1. Clone the repository
    ```
-   git clone https://github.com/yourusername/rent_smart.git
+   git clone https://github.com/EmmahOwens/rent_smart.git
    cd rent_smart
    ```
 
