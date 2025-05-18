@@ -88,18 +88,14 @@ class FirebaseMessagingService {
         currentToken = await _firebaseMessaging.getToken(vapidKey: kIsWeb ? "YOUR_WEB_VAPID_KEY_HERE" : null);
       }
 
-      if (currentToken != null) {
-        print('FCM Token: $currentToken');
-        // Save the token to Firestore under the user's document
-        await _firestoreService.usersCollection.doc(user.uid).update({
-          'fcmToken': currentToken,
-          'lastTokenUpdate': FieldValue.serverTimestamp(),
-        });
-        print('FCM token updated in Firestore for user ${user.uid}');
-      } else {
-        print('Failed to get FCM token.');
-      }
-    } catch (e) {
+      print('FCM Token: $currentToken');
+      // Save the token to Firestore under the user's document
+      await _firestoreService.usersCollection.doc(user.uid).update({
+        'fcmToken': currentToken,
+        'lastTokenUpdate': FieldValue.serverTimestamp(),
+      });
+      print('FCM token updated in Firestore for user ${user.uid}');
+        } catch (e) {
       print('Error getting/updating FCM token: $e');
     }
   }

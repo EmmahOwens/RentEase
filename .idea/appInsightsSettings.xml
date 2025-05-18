@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.owen.rentsmart" />
-                  <option name="mobileSdkAppId" value="1:910794508112:android:7877f21c2aab82ca270e55" />
-                  <option name="projectId" value="rentease256" />
-                  <option name="projectNumber" value="910794508112" />
+                  <option name="mobileSdkAppId" value="1:593390512967:android:8d54a608fb24109ad0ba62" />
+                  <option name="projectId" value="rent-smart256" />
+                  <option name="projectNumber" value="593390512967" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
